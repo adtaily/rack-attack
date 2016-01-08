@@ -13,12 +13,15 @@ module Rack
         end
 
         def read(key)
-          result = self[:events].find(key: key).limit(1).first
-          result["value"] if result
+          result = self[:events].find(
+            key: key, expires_in: { :$gt => Time.now }
+          ).limit(1).first
+
+          result["count"] if result
         end
 
-        def write(key, value, options = {})
-          to_insert = { key: key, value: value }
+        def write(key, count, options = {})
+          to_insert = { key: key, count: count }
 
           if options[:expires_in]
             to_insert.merge!(expires_in: Time.now + options[:expires_in])
@@ -28,19 +31,21 @@ module Rack
         end
 
         def increment(key, amount, options = {})
-          count = nil
-
-          collection = self[:events].find(key: key)
-          changed = collection.update_one(:$inc => { count: amount }).n
-          count = collection.first.count unless changed.zero?
+          update_hash = { :$inc => { count: amount } }
 
           if options[:expires_in]
-            collection.update_one(
+            update_hash.merge!(
               :$set => { expires_in: Time.now + options[:expires_in] }
             )
           end
 
-          count
+          result = self[:events].find_one_and_update(
+            { key: key, expires_in: { :$gt => Time.now } },
+            update_hash,
+            return_document: :after
+          )
+
+          result["count"] if result
         end
 
         def delete(key, options = {})
