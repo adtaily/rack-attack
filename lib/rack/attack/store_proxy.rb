@@ -1,7 +1,7 @@
 module Rack
   class Attack
     module StoreProxy
-      PROXIES = [DalliProxy, RedisStoreProxy, MongoDbProxy]
+      PROXIES = [DalliProxy, RedisStoreProxy, Mongo2Proxy]
 
       def self.build(store)
         # RedisStore#increment needs different behavior, so detect that

@@ -3,7 +3,7 @@ require 'delegate'
 module Rack
   class Attack
     module StoreProxy
-      class MongoDbProxy < SimpleDelegator
+      class Mongo2Proxy < SimpleDelegator
         def self.handle?(store)
           defined?(::Mongo) && store.is_a?(::Mongo::Client)
         end

@@ -21,7 +21,7 @@ describe Rack::Attack::Cache do
   require 'mongo'
   require 'connection_pool'
 
-Mongo::Logger.logger.level = ::Logger::FATAL
+  Mongo::Logger.logger.level = ::Logger::FATAL
 
   cache_stores = [
     ActiveSupport::Cache::MemoryStore.new,
