@@ -3,9 +3,9 @@ require 'delegate'
 module Rack
   class Attack
     module StoreProxy
-      class Mongo2Proxy < SimpleDelegator
+      class MopedProxy < SimpleDelegator
         def self.handle?(store)
-          defined?(::Mongo) && store.is_a?(::Mongo::Client)
+          defined?(::Moped) && store.is_a?(::Moped::Database)
         end
 
         def initialize(store)
@@ -15,7 +15,7 @@ module Rack
         def read(key)
           result = self[:events].find(
             key: key, expires_in: { :$gt => Time.now }
-          ).limit(1).first
+          ).one
 
           result["count"] if result
         end
@@ -27,7 +27,7 @@ module Rack
             to_insert.merge!(expires_in: Time.now + options[:expires_in])
           end
 
-          self[:events].insert_one(to_insert)
+          self[:events].insert(to_insert)
         end
 
         def increment(key, amount, options = {})
@@ -39,17 +39,15 @@ module Rack
             )
           end
 
-          result = self[:events].find_one_and_update(
-            { key: key, expires_in: { :$gt => Time.now } },
-            update_hash,
-            return_document: :after
-          )
+          results = self[:events].find(key: key, expires_in: { :$gt => Time.now })
 
-          result["count"] if result
+          results.update(update_hash) if results.one
+
+          results.one.fetch("count", nil)
         end
 
-        def delete(key, options = {})
-          self[:events].find(key: key).delete_one
+        def delete(key, __options__ = {})
+          self[:events].find(key: key).remove
         end
       end
     end

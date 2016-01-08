@@ -9,5 +9,5 @@ group :development do
 end
 
 group :test, :development do
-  gem 'mongo'
+  gem 'moped', '2.0.0'
 end
