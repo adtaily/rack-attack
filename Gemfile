@@ -7,3 +7,7 @@ group :development do
   gem 'guard' # NB: this is necessary in newer versions
   gem 'guard-minitest'
 end
+
+group :test, :development do
+  gem 'mongo'
+end
