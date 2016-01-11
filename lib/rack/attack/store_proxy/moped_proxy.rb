@@ -43,7 +43,7 @@ module Rack
 
           results.update(update_hash) if results.one
 
-          results.one.fetch("count", nil)
+          results.one["count"] if results.one
         end
 
         def delete(key, __options__ = {})
